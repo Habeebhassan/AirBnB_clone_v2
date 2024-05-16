@@ -1,23 +1,17 @@
 #!/usr/bin/python3
-'''
-A script using fabric to distribute archive to web servers
-'''
-
+"""A script for web application deployment with Fabric."""
 import os
 from datetime import datetime
 from fabric.api import env, local, put, run, runs_once
 
 
-env.hosts = ['54.165.34.223', '34.207.57.80']
+"""list of host server IP addresses."""
+env.hosts = ["54.165.34.223", "34.207.57.80"]
 
 
-def do_deploy(archive_path):
-    """Share archive file among web servers.
-    Args:
-        archive_path (str): Path of the archive to be shared
-    Returns:
-        If the file path or the file doesn't exist - False else True.
-    """
+@runs_once
+def do_pack():
+    """Archives the static files."""
     if not os.path.isdir("versions"):
         os.mkdir("versions")
     cur_time = datetime.now()
@@ -30,17 +24,17 @@ def do_deploy(archive_path):
         cur_time.second
     )
     try:
-        print("Packs web_static to {}".format(output))
+        print("loading web_static to {}".format(output))
         local("tar -cvzf {} web_static".format(output))
         archize_size = os.stat(output).st_size
-        print("web_static packed: {} -> {} Bytes".format(output, archize_size))
+        print("web_static loaded: {} -> {} Bytes".format(output, archize_size))
     except Exception:
         output = None
     return output
 
 
 def do_deploy(archive_path):
-    """Deploys the static files to the host servers.
+    """Deployed static files to the host servers.
     Args:
         archive_path (str): The path to the archived static files.
     """
@@ -59,7 +53,7 @@ def do_deploy(archive_path):
         run("rm -rf {}web_static".format(folder_path))
         run("rm -rf /data/web_static/current")
         run("ln -s {} /data/web_static/current".format(folder_path))
-        print('New version deployed!')
+        print('New version is live!')
         success = True
     except Exception:
         success = False
